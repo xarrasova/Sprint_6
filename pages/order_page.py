@@ -1,21 +1,23 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from .base_page import BasePage
+from .locators import OrderPageLocators
+import allure
 
 
-class OrderPage:
+class OrderPage(BasePage):
+
     def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 15)
+        super().__init__(driver)
 
+    @allure.step("Заполнить первую форму заказа")
     def fill_first_form(self, name, surname, address, metro, phone):
-        self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//input[@placeholder='* Имя']"))
-        ).send_keys(name)
-        self.driver.find_element(By.XPATH, "//input[@placeholder='* Фамилия']").send_keys(surname)
-        self.driver.find_element(By.XPATH, "//input[@placeholder='* Адрес: куда привезти заказ']").send_keys(address)
+        self.send_keys_to_element(OrderPageLocators.NAME_INPUT, name)
+        self.send_keys_to_element(OrderPageLocators.SURNAME_INPUT, surname)
+        self.send_keys_to_element(OrderPageLocators.ADDRESS_INPUT, address)
 
-        metro_input = self.driver.find_element(By.XPATH, "//input[@placeholder='* Станция метро']")
+        # Метро
+        metro_input = self.wait_for_clickable(OrderPageLocators.METRO_INPUT)
         metro_input.click()
         metro_input.clear()
         metro_input.send_keys(metro)
@@ -27,23 +29,21 @@ class OrderPage:
                 station.click()
                 break
 
-        self.driver.find_element(By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']").send_keys(phone)
-        self.driver.find_element(By.XPATH, "//button[text()='Далее']").click()
+        self.send_keys_to_element(OrderPageLocators.PHONE_INPUT, phone)
+        self.click_element(OrderPageLocators.NEXT_BUTTON)
+        return self
 
+    @allure.step("Заполнить вторую форму заказа")
     def fill_second_form(self, date, rental_days, color, comment):
         # Дата
-        date_input = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//input[@placeholder='* Когда привезти самокат']"))
-        )
+        date_input = self.wait_for_clickable(OrderPageLocators.DATE_INPUT)
         date_input.click()
         date_input.send_keys(date)
         self.driver.find_element(By.TAG_NAME, "body").click()
 
         # Срок аренды
-        self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "Dropdown-placeholder"))).click()
-        days = self.wait.until(
-            EC.presence_of_all_elements_located((By.XPATH, "//div[@class='Dropdown-menu']/div"))
-        )
+        self.click_element(OrderPageLocators.RENTAL_PERIOD)
+        days = self.find_elements(OrderPageLocators.RENTAL_DAYS)
         for day in days:
             if day.text == rental_days:
                 day.click()
@@ -51,22 +51,29 @@ class OrderPage:
 
         # Цвет
         if color == "black":
-            self.driver.find_element(By.ID, "black").click()
+            self.click_element(OrderPageLocators.COLOR_BLACK)
         elif color == "grey":
-            self.driver.find_element(By.ID, "grey").click()
+            self.click_element(OrderPageLocators.COLOR_GREY)
 
         # Комментарий
-        self.driver.find_element(By.XPATH, "//input[@placeholder='Комментарий для курьера']").send_keys(comment)
+        self.send_keys_to_element(OrderPageLocators.COMMENT_INPUT, comment)
 
-        # Кнопка "Заказать" - ИЩЕМ ПО КЛАССАМ (как на скриншоте)
+        # Кнопка "Заказать"
         order_button = self.wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'Button_Button__ra12g') and contains(@class, 'Button_Middle__1CSJM') and text()='Заказать']"))
         )
         order_button.click()
+        return self
 
+    @allure.step("Подтвердить заказ в модальном окне")
     def confirm_order(self):
-        self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[text()='Да']"))).click()
+        confirm_button = self.wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//button[text()='Да']"))
+        )
+        confirm_button.click()
+        return self
 
+    @allure.step("Получить сообщение об успешном заказе")
     def get_success_message(self):
         return self.wait.until(
             EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'Order_ModalHeader')]"))

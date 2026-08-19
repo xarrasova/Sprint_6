@@ -1,9 +1,7 @@
-# pages/locators.py
 from selenium.webdriver.common.by import By
 
 
 class MainPageLocators:
-    """Локаторы для главной страницы"""
     
     ORDER_TOP_BUTTON = (By.CLASS_NAME, "Button_Button__ra12g")
     ORDER_BOTTOM_BUTTON = (By.XPATH, "//button[contains(@class, 'Button_Button__ra12g') and contains(text(), 'Заказать')]")
@@ -21,9 +19,8 @@ class MainPageLocators:
 
 
 class OrderPageLocators:
-    """Локаторы для страницы заказа"""
     
-    # ----- Первая форма: "Для кого самокат" -----
+    # ----- Первая форма -----
     NAME_INPUT = (By.XPATH, "//input[@placeholder='* Имя']")
     SURNAME_INPUT = (By.XPATH, "//input[@placeholder='* Фамилия']")
     ADDRESS_INPUT = (By.XPATH, "//input[@placeholder='* Адрес: куда привезти заказ']")
@@ -31,7 +28,11 @@ class OrderPageLocators:
     PHONE_INPUT = (By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']")
     NEXT_BUTTON = (By.XPATH, "//button[text()='Далее']")
     
-    # ----- Вторая форма: "Про аренду" -----
+    @staticmethod
+    def metro_station(station_name):
+        return (By.XPATH, f"//div[@class='select-search__select']//button[text()='{station_name}']")
+    
+    # ----- Вторая форма -----
     DATE_INPUT = (By.XPATH, "//input[@placeholder='* Когда привезти самокат']")
     RENTAL_PERIOD = (By.CLASS_NAME, "Dropdown-placeholder")
     RENTAL_DAYS = (By.XPATH, "//div[@class='Dropdown-menu']/div")
@@ -40,6 +41,6 @@ class OrderPageLocators:
     COMMENT_INPUT = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
     ORDER_BUTTON = (By.XPATH, "//button[text()='Заказать']")
     
-    # ----- Модальное окно подтверждения -----
+    # ----- Модальное окно -----
     CONFIRM_BUTTON = (By.XPATH, "//button[text()='Да']")
     SUCCESS_MESSAGE = (By.XPATH, "//div[contains(@class, 'Order_ModalHeader')]")
