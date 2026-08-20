@@ -39,7 +39,10 @@ class OrderPageLocators:
     COLOR_BLACK = (By.ID, "black")
     COLOR_GREY = (By.ID, "grey")
     COMMENT_INPUT = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
-    ORDER_BUTTON = (By.XPATH, "//button[text()='Заказать']")
+    ORDER_BUTTON = (By.XPATH, "//button[contains(@class, 'Button_Button__ra12g') and contains(@class, 'Button_Middle__1CSJM') and text()='Заказать']")
+    
+    # Локатор для выпадающего списка метро
+    METRO_SELECT = (By.CLASS_NAME, "select-search__select")
     
     # ----- Модальное окно -----
     CONFIRM_BUTTON = (By.XPATH, "//button[text()='Да']")

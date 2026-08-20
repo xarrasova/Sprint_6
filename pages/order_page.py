@@ -22,8 +22,8 @@ class OrderPage(BasePage):
         metro_input.clear()
         metro_input.send_keys(metro)
 
-        self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "select-search__select")))
-        stations = self.driver.find_elements(By.XPATH, "//div[@class='select-search__select']//button")
+        self.wait.until(EC.visibility_of_element_located(OrderPageLocators.METRO_SELECT))
+        stations = self.find_elements((By.XPATH, "//div[@class='select-search__select']//button"))
         for station in stations:
             if station.text == metro:
                 station.click()
@@ -31,7 +31,6 @@ class OrderPage(BasePage):
 
         self.send_keys_to_element(OrderPageLocators.PHONE_INPUT, phone)
         self.click_element(OrderPageLocators.NEXT_BUTTON)
-        return self
 
     @allure.step("Заполнить вторую форму заказа")
     def fill_second_form(self, date, rental_days, color, comment):
@@ -39,7 +38,7 @@ class OrderPage(BasePage):
         date_input = self.wait_for_clickable(OrderPageLocators.DATE_INPUT)
         date_input.click()
         date_input.send_keys(date)
-        self.driver.find_element(By.TAG_NAME, "body").click()
+        self.click_body()  # ← вынесено в BasePage
 
         # Срок аренды
         self.click_element(OrderPageLocators.RENTAL_PERIOD)
@@ -59,22 +58,12 @@ class OrderPage(BasePage):
         self.send_keys_to_element(OrderPageLocators.COMMENT_INPUT, comment)
 
         # Кнопка "Заказать"
-        order_button = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'Button_Button__ra12g') and contains(@class, 'Button_Middle__1CSJM') and text()='Заказать']"))
-        )
-        order_button.click()
-        return self
+        self.click_element(OrderPageLocators.ORDER_BUTTON)
 
     @allure.step("Подтвердить заказ в модальном окне")
     def confirm_order(self):
-        confirm_button = self.wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//button[text()='Да']"))
-        )
-        confirm_button.click()
-        return self
+        self.click_element(OrderPageLocators.CONFIRM_BUTTON)
 
     @allure.step("Получить сообщение об успешном заказе")
     def get_success_message(self):
-        return self.wait.until(
-            EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'Order_ModalHeader')]"))
-        ).text
+        return self.get_element_text(OrderPageLocators.SUCCESS_MESSAGE)
